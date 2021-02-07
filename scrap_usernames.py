@@ -2,27 +2,17 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import selenium.common.exceptions
 import time
-import random
 import itertools
 from explicit import waiter, XPATH
+import os
+import json
+import sys
 
 
-# Login Credentials
-username = "uchiha.leo.06@gmail.com"
-password = "q3w2e1r4t5"
-url = 'https://instagram.com/'
-# page = input("Enter the instagram page username: ")
-page = "indiaofficialfreefire"
-
-chrome = webdriver.Chrome()
-
-
-def url_name(url):
+def login(shrome, username, your_password):
     chrome.get(url)
     time.sleep(4)
 
-
-def login(username, your_password):
     usern = chrome.find_element_by_name("username")
     usern.send_keys(username)
 
@@ -33,7 +23,7 @@ def login(username, your_password):
     time.sleep(5.5)
 
 
-def send_message():
+def scrap_usernames():
     chrome.get(url + page + "/")
     time.sleep(4)
 
@@ -57,8 +47,43 @@ def send_message():
         chrome.execute_script("arguments[0].scrollIntoView();", last_follower)
 
 
-url_name(url)
+def create_json_file(followers_count, dir_path):
+    if not os.path.exists(dir_path):
+        os.mkdir(dir_path)
+
+    follower_list = list()
+    for count, follower in enumerate(send_message(), 1):
+        print("\t{:>3}: {}".format(count, follower))
+        follower_list.append(follower)
+        if (count % followers_count) == 0:
+            # Create the file
+            print(os.path.join(dir_path, 'P_' +
+                               str(int(count / followers_count)) + ".json"))
+            with open(os.path.join(dir_path, 'P_' + str(int(count / followers_count)) + ".json"), 'w') as json_file:
+                json.dump(
+                    {"status": "P", "followers_list": follower_list, "follower_count": followers_count}, json_file, indent=4)
+            # Refresh the follower list
+            follower_list.clear()
+            break
+
+
+if __name__ == "__main__":
+    if (len(sys.argv) != 6):
+    sys.exit("Usage: python3 scrap_usernames.py username password page_username follower_group_size output_dir_path")
+
+    username = sys.argv[1]
+    password = sys.argv[2]
+    url = 'https://instagram.com/'
+    page = sys.argv[3]
+    follower_count = int(sys.argv[4])
+    output_dir_path = sys.argv[5]
+
+    chrome = webdriver.Chrome()
+
+    login(chrome, username, password)
+
 login(username, password)
-for count, follower in enumerate(send_message(), 1):
-    print("\t{:>3}: {}".format(count, follower))
+
+create_json_file(10, "test_dir")
+
 chrome.close()
