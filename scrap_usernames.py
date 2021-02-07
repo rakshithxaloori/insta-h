@@ -9,22 +9,22 @@ import json
 import sys
 
 
-def login(shrome, username, your_password):
-    chrome.get(url)
+def login(chrome, username, password):
+    chrome.get("https://www.instagram.com/")
     time.sleep(4)
 
     usern = chrome.find_element_by_name("username")
     usern.send_keys(username)
 
     passw = chrome.find_element_by_name("password")
-    passw.send_keys(your_password)
+    passw.send_keys(password)
 
     passw.send_keys(Keys.RETURN)
     time.sleep(5.5)
 
 
-def scrap_usernames():
-    chrome.get(url + page + "/")
+def scrap_usernames(chrome):
+    chrome.get("https://www.instagram.com/" + page + "/")
     time.sleep(4)
 
     # Click on a tag
@@ -43,17 +43,18 @@ def scrap_usernames():
             yield waiter.find_element(chrome, follower_css.format(follower_index)).text
 
         last_follower = waiter.find_element(
-            chrome, follower_css.format(group+11))
+            chrome, follower_css.format(group + 11))
+        time.sleep(2)
         chrome.execute_script("arguments[0].scrollIntoView();", last_follower)
 
 
-def create_json_file(followers_count, dir_path):
+def create_json_file(chrome, followers_count, dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
     follower_list = list()
-    for count, follower in enumerate(send_message(), 1):
-        print("\t{:>3}: {}".format(count, follower))
+    for count, follower in enumerate(scrap_usernames(chrome), 1):
+        # print("\t{:>3}: {}".format(count, follower))
         follower_list.append(follower)
         if (count % followers_count) == 0:
             # Create the file
@@ -64,12 +65,12 @@ def create_json_file(followers_count, dir_path):
                     {"status": "P", "followers_list": follower_list, "follower_count": followers_count}, json_file, indent=4)
             # Refresh the follower list
             follower_list.clear()
-            break
 
 
 if __name__ == "__main__":
     if (len(sys.argv) != 6):
-    sys.exit("Usage: python3 scrap_usernames.py username password page_username follower_group_size output_dir_path")
+        sys.exit(
+            "Usage: python3 scrap_usernames.py username password page_username follower_group_size output_dir_path")
 
     username = sys.argv[1]
     password = sys.argv[2]
@@ -81,9 +82,5 @@ if __name__ == "__main__":
     chrome = webdriver.Chrome()
 
     login(chrome, username, password)
-
-login(username, password)
-
-create_json_file(10, "test_dir")
-
-chrome.close()
+    create_json_file(chrome, follower_count, output_dir_path)
+    chrome.close()
