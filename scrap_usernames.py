@@ -44,7 +44,7 @@ def scrap_usernames(chrome, total_followers_count):
         for follower_index in range(group, group + 12):
             if follower_index > total_followers_count:
                 raise StopIteration
-            element = WebDriverWait(chrome, 100).until(
+            element = WebDriverWait(chrome, 1000).until(
                 EC.presence_of_element_located(
                     (By.CSS_SELECTOR, follower_css.format(follower_index)))
             )
@@ -73,7 +73,7 @@ def create_json_file(chrome, total_followers_count, followers_count, dir_path):
                     {"status": "P", "followers_list": follower_list, "follower_count": followers_count}, json_file, indent=4)
             # Refresh the follower list
             follower_list.clear()
-            time.sleep(5)
+            time.sleep(10)
 
 
 if __name__ == "__main__":
