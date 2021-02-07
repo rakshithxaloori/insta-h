@@ -28,7 +28,7 @@ def login(chrome, username, password):
     time.sleep(5.5)
 
 
-def scrap_usernames(chrome):
+def scrap_usernames(chrome, total_followers_count):
     chrome.get("https://www.instagram.com/" + page + "/")
     time.sleep(4)
 
@@ -38,14 +38,13 @@ def scrap_usernames(chrome):
 
     # Get the followers list
     waiter.find_element(chrome, "//div[@role='dialog']", by=XPATH)
-    follower_count = 1000
     # Taking advange of CSS's nth-child functionality
     follower_css = "ul div li:nth-child({}) a.notranslate"
     for group in itertools.count(start=1, step=12):
         for follower_index in range(group, group + 12):
-            if follower_index > follower_count:
+            if follower_index > total_followers_count:
                 raise StopIteration
-            element = WebDriverWait(chrome, 10).until(
+            element = WebDriverWait(chrome, 100).until(
                 EC.presence_of_element_located(
                     (By.CSS_SELECTOR, follower_css.format(follower_index)))
             )
@@ -57,13 +56,13 @@ def scrap_usernames(chrome):
         chrome.execute_script("arguments[0].scrollIntoView();", last_follower)
 
 
-def create_json_file(chrome, followers_count, dir_path):
+def create_json_file(chrome, total_followers_count, followers_count, dir_path):
     if not os.path.exists(dir_path):
         os.mkdir(dir_path)
 
     follower_list = list()
-    for count, follower in enumerate(scrap_usernames(chrome), 1):
-        # print("\t{:>3}: {}".format(count, follower))
+    for count, follower in enumerate(scrap_usernames(chrome, total_followers_count), 1):
+        print("\t{:>3}: {}".format(count, follower))
         follower_list.append(follower)
         if (count % followers_count) == 0:
             # Create the file
@@ -74,23 +73,25 @@ def create_json_file(chrome, followers_count, dir_path):
                     {"status": "P", "followers_list": follower_list, "follower_count": followers_count}, json_file, indent=4)
             # Refresh the follower list
             follower_list.clear()
-            break
+            time.sleep(5)
 
 
 if __name__ == "__main__":
-    if (len(sys.argv) != 6):
+    if (len(sys.argv) != 7):
         sys.exit(
-            "Usage: python3 scrap_usernames.py username password page_username follower_group_size output_dir_path")
+            "Usage: python3 scrap_usernames.py username password page_username total_followers_count follower_group_size output_dir_path")
 
     username = sys.argv[1]
     password = sys.argv[2]
     url = 'https://instagram.com/'
     page = sys.argv[3]
-    follower_count = int(sys.argv[4])
-    output_dir_path = sys.argv[5]
+    total_followers_count = int(sys.argv[4])
+    follower_count = int(sys.argv[5])
+    output_dir_path = sys.argv[6]
 
     chrome = webdriver.Chrome()
 
     login(chrome, username, password)
-    create_json_file(chrome, follower_count, output_dir_path)
+    create_json_file(
+        chrome, total_followers_count, follower_count, output_dir_path)
     chrome.close()
