@@ -1,12 +1,17 @@
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-import selenium.common.exceptions
 import time
 import itertools
-from explicit import waiter, XPATH
 import os
 import json
 import sys
+
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import selenium.common.exceptions
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+from explicit import waiter, XPATH
 
 
 def login(chrome, username, password):
@@ -40,11 +45,15 @@ def scrap_usernames(chrome):
         for follower_index in range(group, group + 12):
             if follower_index > follower_count:
                 raise StopIteration
-            yield waiter.find_element(chrome, follower_css.format(follower_index)).text
+            element = WebDriverWait(chrome, 10).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, follower_css.format(follower_index)))
+            )
+            # yield waiter.find_element(chrome, follower_css.format(follower_index)).text
+            yield element.text
 
         last_follower = waiter.find_element(
             chrome, follower_css.format(group + 11))
-        time.sleep(1)
         chrome.execute_script("arguments[0].scrollIntoView();", last_follower)
 
 
@@ -65,6 +74,7 @@ def create_json_file(chrome, followers_count, dir_path):
                     {"status": "P", "followers_list": follower_list, "follower_count": followers_count}, json_file, indent=4)
             # Refresh the follower list
             follower_list.clear()
+            break
 
 
 if __name__ == "__main__":
