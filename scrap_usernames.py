@@ -44,7 +44,7 @@ def scrap_usernames(chrome):
 
         last_follower = waiter.find_element(
             chrome, follower_css.format(group + 11))
-        time.sleep(2)
+        time.sleep(1)
         chrome.execute_script("arguments[0].scrollIntoView();", last_follower)
 
 
