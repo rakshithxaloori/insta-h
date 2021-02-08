@@ -7,7 +7,7 @@ class DatabaseOperations:
         self.conn = self.connect()
         if self.conn is None:
             raise EnvironmentError
-        self.create_tables()
+        # self.create_tables()
 
     def connect(self):
         """ Connect to the PostgreSQL database server """
