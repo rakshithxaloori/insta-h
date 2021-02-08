@@ -63,7 +63,7 @@ def scrap_usernames(chrome, new_database_connection, total_followers_count):
 
 
 if __name__ == "__main__":
-   if (len(sys.argv) != 5):
+    if (len(sys.argv) != 5):
         sys.exit(
             "Usage: python3 scrap_usernames.py username password page_username total_followers_count")
 
