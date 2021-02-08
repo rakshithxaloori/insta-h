@@ -1,2 +1,3 @@
 selenium
 explicit
+psycopg2-binary

@@ -29,6 +29,10 @@ def login(chrome, username, password):
     passw.send_keys(Keys.RETURN)
     time.sleep(5.5)
 
+    notk = chrome.find_element_by_class_name("yWX7d")
+    notk.click()
+    time.sleep(3)
+
 
 def scrap_usernames(chrome, new_database_connection, total_followers_count):
     chrome.get("https://www.instagram.com/" + page + "/")
@@ -69,7 +73,6 @@ if __name__ == "__main__":
 
     username = sys.argv[1]
     password = sys.argv[2]
-    url = 'https://instagram.com/'
     page = sys.argv[3]
     total_followers_count = int(sys.argv[4])
 
@@ -82,6 +85,7 @@ if __name__ == "__main__":
 
     while not call_scrap_usernames:
         chrome.close()
+        time.sleep(9000)
         chrome = webdriver.Chrome()
         login(chrome, username, password)
         new_database_connection.close_connection()
