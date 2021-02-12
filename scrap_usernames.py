@@ -29,9 +29,9 @@ def login(chrome, username, password):
     passw.send_keys(Keys.RETURN)
     time.sleep(5.5)
 
-    notk = chrome.find_element_by_class_name("yWX7d")
-    notk.click()
-    time.sleep(3)
+    # notk = chrome.find_element_by_class_name("yWX7d")
+    # notk.click()
+    # time.sleep(3)
 
 
 def scrap_usernames(chrome, new_database_connection, total_followers_count):
@@ -48,6 +48,8 @@ def scrap_usernames(chrome, new_database_connection, total_followers_count):
     follower_css = "ul div li:nth-child({}) a.notranslate"
     for group in itertools.count(start=1, step=12):
         for follower_index in range(group, group + 12):
+            if (follower_index % 100) == 0:
+                time.sleep(200)
             if follower_index > total_followers_count:
                 return True
             try:
@@ -58,7 +60,7 @@ def scrap_usernames(chrome, new_database_connection, total_followers_count):
                 # yield waiter.find_element(chrome, follower_css.format(follower_index)).text
                 new_database_connection.add_to_database(element.text)
             except Exception as e:
-                print("e")
+                print(e)
                 return False
 
         last_follower = waiter.find_element(
