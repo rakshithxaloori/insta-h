@@ -25,7 +25,7 @@ def go_to_dms(chrome):
     time.sleep(4)
 
 
-def send_pic(chrome, new_database_connection, username):
+def send_pic(chrome, db_conn, username):
     # Click on Write Message
     write_msg_button = chrome.find_element_by_xpath(
         "//button[contains(@class, 'wpO6b ZQScA')]")
@@ -68,8 +68,6 @@ def send_pic(chrome, new_database_connection, username):
     # Send pic
     img_input = chrome.find_element_by_class_name("tb_sK")
     img_input.send_keys("/home/rakshith/proeliumx/instagram-h/wp1874041-boku-no-hero-wallpapers.png")
-    time.sleep(100)
-
     return True
 
 
@@ -81,12 +79,26 @@ if __name__ == "__main__":
     password = sys.argv[2]
 
     chrome = webdriver.Chrome()
-    new_database_connection = DatabaseOperations()
+    db_conn = DatabaseOperations()
 
     login(chrome, username, password)
     go_to_dms(chrome)
     # Get 100 usernames with P status
-    while True:
-        status = send_pic(chrome, new_database_connection, "hello")
-        update_status(new_database_connection, username, status)
+    chat_username = db_conn.fetch_username()
+    count = 0
+    while chat_username is not None:
+        status = send_pic(chrome, db_conn, chat_username[0])
+        print(chat_username[0], "PIC SENT")
+        db_conn.update_username(chat_username[0])
+        
+        time.sleep(1)
+        count += 1
+        chat_username = db_conn.fetch_username()
+
+        if (count % 1000) == 0:
+            time.sleep(600)
+        elif (count % 100) == 0:
+            time.sleep(100)
+    
+    db_conn.close_connection()
     chrome.close()
