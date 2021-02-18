@@ -96,6 +96,19 @@ class DatabaseOperations:
             if cur is not None:
                 cur.close()
 
+    def failed_username(self, username):
+        try:
+            command = "UPDATE insta_usernames SET status = %s WHERE username = %s"
+            cur = self.conn.cursor()
+            cur.execute(command, ("F", username))
+            self.conn.commit()
+            print(username, "UPDATED DB")
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+        finally:
+            if cur is not None:
+                cur.close()
 
     def close_connection(self):
         self.conn.close()

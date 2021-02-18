@@ -47,6 +47,8 @@ def send_pic(chrome, db_conn, username):
 
     next_button = chrome.find_element_by_xpath(
         "//button[contains(@class, 'sqdOP yWX7d    y3zKF   cB_4K')]")
+    if not next_button.is_enabled():
+        return False
     next_button.click()
     time.sleep(2)
 
@@ -67,7 +69,8 @@ def send_pic(chrome, db_conn, username):
 
     # Send pic
     img_input = chrome.find_element_by_class_name("tb_sK")
-    img_input.send_keys("/home/rakshith/proeliumx/instagram-h/wp1874041-boku-no-hero-wallpapers.png")
+    img_input.send_keys(
+        "/home/rakshith/proeliumx/instagram-h/WhatsApp Image 2021-02-17 at 20.34.42.jpeg")
     return True
 
 
@@ -83,14 +86,19 @@ if __name__ == "__main__":
 
     login(chrome, username, password)
     go_to_dms(chrome)
-    # Get 100 usernames with P status
+
     chat_username = db_conn.fetch_username()
     count = 0
     while chat_username is not None:
         status = send_pic(chrome, db_conn, chat_username[0])
-        print(chat_username[0], "PIC SENT")
-        db_conn.update_username(chat_username[0])
-        
+
+        if status:
+            db_conn.update_username(chat_username[0])
+            print(chat_username[0], "PIC SENT")
+        else:
+            db_conn.failed_username(chat_username[0])
+            print(chat_username[0], "PIC SENT FAILED")
+
         time.sleep(1)
         count += 1
         chat_username = db_conn.fetch_username()
@@ -99,6 +107,6 @@ if __name__ == "__main__":
             time.sleep(600)
         elif (count % 100) == 0:
             time.sleep(100)
-    
+
     db_conn.close_connection()
     chrome.close()
